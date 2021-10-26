@@ -1,37 +1,146 @@
-## Welcome to GitHub Pages
+## Arch-Installation
 
-You can use the [editor on GitHub](https://github.com/JulianAbhari/archlinux.github.io/edit/gh-pages/index.md) to maintain and preview the content for your website in Markdown files.
+1. After you’ve loaded in your iso into your vm-ware environment and configured your virtualization to have the correct amount of memory and storage, verify the boot mode by entering this command: `ls /sys/firmware/efi/efivars`
+- If the directory exists then the system is booted in UEFI mode
 
-Whenever you commit to this repository, GitHub Pages will run [Jekyll](https://jekyllrb.com/) to rebuild the pages in your site, from the content in your Markdown files.
 
-### Markdown
+2. Connecting to the internet:
+- See if you’re already connected
+- ping -c 2 google.com
+- If you see that your packets were transmitted, and you received packets back from google, then that’s one way to make sure you’re connected.
+- In my case this worked
+- Another way to tell is by using curl
+- curl -I https://linuxhint.com/
+- If you get an http status of 200 then you know you’re for sure connected to the internet
 
-Markdown is a lightweight and easy-to-use syntax for styling your writing. It includes conventions for
+3. Update the system clock
+- Check if timedate needs updating
+- `timedatectl status`
+- If it does you can set the time using the following command
+- `timedatectl set-time “2021-10-19 16:32:25”`
+- To not continuously have to set-time each time you reboot and the time isn’t correct, se the time synchronization check to true using this command
+- `timedatectl set-ntp true`
 
-```markdown
-Syntax highlighted code block
+4. Partition the disks
+- Type `fdisk -l` to list all available disks
+- Type `fdisk /dev/sda` to create a partition in the correct disk
+- Typing m brings up a help page which is pretty useful
+- I typed `g` to create a gpt partition table
+- Type `n` to add a new partition
+   - Partition number: `1`
+      - When asking which sector I simply pressed return to use the default value of 2048
+      - When asking for the last sector I typed `+550M` as that will be the EFI partition
+      - I’m adding two more partitions, so I type `n` to create another new partition
+    - Partition number: `2`
+      - Default sector
+      - Size +2G because this next partition is for SWAP: `+2G`
+      - Press `n` one last time to add the last partition
+    - Partition number: `3`
+      - When asking for first sector use default
+      - When asking for last sector use default because that’s the remaining space available
+- Now so far every partition has been of type “Linux filesystem” which is only correct for the third partition, but not for the first 2
+- Press `t`  to change partition 1’s type to EFI System
+- Press `1` to specify that we want to use the first type, EFI System
+- Press `t` to change partition 2’s type
+- Press `19` to specify that we want to use the 19th type, Linux swap
+- Make sure everything is correct before this next step
+- Type `w` to write the partition table
+5. Make file system
+- Make f3 different file systems on 3 different partitions
+- For EFI partition it needs to be FAT32, so type `mkfs.fat -F32 /dev/sda1`
+- For swap partition use `mkswap /dev/sda2`
+- Turn swap on by typing `swapon /dev/sda2`
+- Make filesystem on sda3, by using `mkfs.ext4 /dev/sda3`
+- Now to mount the biggest partition, use `mount /dev/sda3 /mnt`
 
-# Header 1
-## Header 2
-### Header 3
+6. Installation
+- To install the base system for arch run the command: `pacstrap /mnt base linux linux-firmware`
+- Generate file system table: `genfstab -U /mnt >> /mnt/etc/fstab`
+- Use `arch-chroot /mnt` to change into root directory of new installation
+- Now that you’re in your new installation, the font should’ve changed
+- Set time zone using `ln -sf /usr/share/zoneinfo/[region]/[city] /etc/localtime`
+- I did `ln -sf /usr/share/zoneinfo/America/Chicago /etc/localtime`
+- Set hardware clock using: `hwclock --systohc`
+- Now we need to use nano to edit the local and uncomment our specific locale
+- Before we can use nano though, we have to install its package
+- Use `pacman -S nano`
+- Type `nano /etc/locale.gen`
+- In my case I uncommented the line `en_US.UTF-8 UTF-8`
+- To get out of nano simply press control+x and then Y to save changes and then enter
+- Now run this command: `locale-gen`
+- Now we need to set the hostname using `nano /etc/hostname`
+- Once in the hostname I just entered the hostname of the computer, `archvbox` and saved the file by pressing control+X and hitting Y to confirm the save
+- Now to create the host file `nano /etc/hosts`
+- Following the wiki simply add in these lines: 
+`127.0.0.1        localhost`
+`::1              localhost`
+`127.0.1.1        [myhostname (in my case ‘archvbox’)]`
 
-- Bulleted
-- List
+7. Creating users
+- After saving the host file, we need to create users and passwords
+- Create a root password by entering `passwd`
+- Create a new user, in my case I’m going to add a user named ‘sal’
+- Type command: `useradd -m sal`
+- I’m setting a password for sal by typing `passwd sal`
+- In order to have the password be force expiration, after setting user sal’s password, I’m typing `passwd -e` after setting the password
+- I want to add sudo to the main user but to do that I need to install sudo, `pacman -S sudo`
+- Edit the sudo file and add the users that have access to sudo using: `EDITOR=nano visudo`
+- Uncomment the line that says `%wheel ALL=(ALL) ALL`
+- Now, use this command to add sudo privileges to the user of your choice: `usermod -aG wheel [user]` (wheel is an alias for sudo)
 
-1. Numbered
-2. List
+8. Install grub: `pacman -S grub`
+- Install efibootmgr: `pacman -S efibootmgr dosfstools os-prober mtools`
+- Make an efi directory and boot directories: `mkdir /boot/EFI`
+- `mount /dev/sda1 /boot/EFI`
+- `grub-install --target=x86_64-efi --bootloader-id=grub_uefi --recheck`
+- Make grub installation file: `grub-mkconfig -o /boot/grub/grub.cfg`
 
-**Bold** and _Italic_ and `Code` text
+9. Install network manager
+- `pacman -S networkmanager vim`
 
-[Link](url) and ![Image](src)
-```
+10. Install ssh
+- `pacman -Syu`
+- `pacman -S openssh`
 
-For more details see [GitHub Flavored Markdown](https://guides.github.com/features/mastering-markdown/).
+11. Enable network manager
+- `systemctl enable NetworkManager`
 
-### Jekyll Themes
+12. Reboot
+- Exit with `exit`
+- `unmount -l /mnt`
+- `reboot`
 
-Your Pages site will use the layout and styles from the Jekyll theme you have selected in your [repository settings](https://github.com/JulianAbhari/archlinux.github.io/settings/pages). The name of this theme is saved in the Jekyll `_config.yml` configuration file.
+13. Install LXDE
+- `sudo pacman -S lxde`
+- `sudo pacman -S xorg-xinit`
+- `nano .xinitrc`
+- Enter `exec startlxde` into the blank space
+- Startx
 
-### Support or Contact
+14. Installing git
+- `sudo pacman -S git`
 
-Having trouble with Pages? Check out our [documentation](https://docs.github.com/categories/github-pages-basics/) or [contact support](https://support.github.com/contact) and we’ll help you sort it out.
+15. Installing browser
+- `git clone https://aur.archlinux.org/google-chrome`
+- `sudo pacman -S base-devel`
+- `makepkg -s`
+- Find the proper compressed package that ends in .tar.gz through ‘ls’
+- `sudo pacman -U google-chrome-95.0.4638.54-1-x86_64.pkg.tar.zst`
+
+16. Installing zsh
+- `sudo pacman -S zsh zsh-completions`
+- Enter zsh through `zsh`
+- Setup key: ‘0’
+
+17. Alias shortcuts
+- `alias c='clear'`
+- `alias ls='ls --color=auto'`
+
+18. Adding colors to bash
+- Enter this command to copy the user-specific bashrc file, `cp .bashrc .bashrc.backup`
+  - Or edit the one in the etc location: `sudo cp /etc/bash.bashrc /etc/bash.bashrc.backup`
+- I chose to edit the main bashrc file by doing `sudo nano /etc/bash.bashrc`
+- I then changed the PS1 variable to become: `PS1="${GREEN}my prompt${RESET}>"`
+- But added in the following lines just above the PS1 variable
+- `GREEN="\[$(tput setaf 2)\]"`
+- `RESET="\[$(tput sgr0)\]"`
