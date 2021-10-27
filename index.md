@@ -99,26 +99,26 @@ Before you start I want to preface by saying that this is the first time I've ev
 - Make grub installation file: `grub-mkconfig -o /boot/grub/grub.cfg`
 
 9. Install network manager
-- `pacman -S networkmanager vim`
+- `pacman -S networkmanager vim` This uses pacman to install the networkmanager and vim
 
 10. Install ssh
-- `pacman -Syu`
-- `pacman -S openssh`
+- `pacman -Syu` 
+- `pacman -S openssh` These two pacman installs are used to download dependencies for ssh
 
 11. Enable network manager
-- `systemctl enable NetworkManager`
+- `systemctl enable NetworkManager` This actually enables the network manager
 
 12. Reboot
 - Exit with `exit`
-- `unmount -l /mnt`
-- `reboot`
+- Unmount current partition using `unmount -l /mnt`
+- Reboot the VM to finish basic installation with `reboot`
 
 13. Install LXDE
-- `sudo pacman -S lxde`
-- `sudo pacman -S xorg-xinit`
-- `nano .xinitrc`
+- Install a lightweight desktop envrionment`sudo pacman -S lxde`
+- Install desktop environment dependencies `sudo pacman -S xorg-xinit`
+- Ues nano to edit the .xinitrc file for the desktop environment `nano .xinitrc`
 - Enter `exec startlxde` into the blank space
-- Startx
+- Enter `startx` to load up the desktop environment
 
 14. Installing git
 - `sudo pacman -S git`
@@ -126,20 +126,20 @@ Before you start I want to preface by saying that this is the first time I've ev
 15. Installing browser
 - `git clone https://aur.archlinux.org/google-chrome`
 - `sudo pacman -S base-devel`
-- `makepkg -s`
+- `makepkg -s` 
 - Find the proper compressed package that ends in .tar.gz through ‘ls’
 - `sudo pacman -U google-chrome-95.0.4638.54-1-x86_64.pkg.tar.zst`
 - I was wondering why the process for installing chrome took so many steps, but I found a YouTube video that explained that there's actually a shortcut command.
 - Instead of using sudo packman -U, immediately after I used `sudo pacman -S base-devel`, I could use `makepkg -sic`
 
 16. Installing zsh
-- `sudo pacman -S zsh zsh-completions`
+- `sudo pacman -S zsh zsh-completions` This is installing zsh
 - Enter zsh through `zsh`
 - Setup key: ‘0’
 
 17. Alias shortcuts
-- `alias c='clear'`
-- `alias ls='ls --color=auto'`
+- `alias c='clear'` This will set a shorcut to simply type out `c` instead of `clear` to clear the terminal
+- `alias ls='ls --color=auto'` This will set a shortcut to simply type `ls` and have it automatically be in color
 
 18. Adding colors to bash
 - Enter this command to copy the user-specific bashrc file, `cp .bashrc .bashrc.backup`
