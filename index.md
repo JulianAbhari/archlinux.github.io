@@ -90,6 +90,7 @@ Before you start I want to preface by saying that this is the first time I've ev
 - Edit the sudo file and add the users that have access to sudo using: `EDITOR=nano visudo`
 - Uncomment the line that says `%wheel ALL=(ALL) ALL`
 - Now, use this command to add sudo privileges to the user of your choice: `usermod -aG wheel [user]` (wheel is an alias for sudo)
+- Unfortuantely I had issues creating users because I forgot to include -m when creating my account, so I had to create an alternative account
 
 8. Install grub: `pacman -S grub`
 - Install efibootmgr: `pacman -S efibootmgr dosfstools os-prober mtools`
