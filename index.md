@@ -1,5 +1,7 @@
 ## Arch-Installation
 
+Before you start I want to preface by saying that this is the first time I've ever installed arch so each command might not have that much info explaining why it's used. Another thing I can't stress enough is to take snapshots after each step and preferably after each sub-step, I can't tell you just how useful it was for me to immediately back up into an immediate snapshot.
+
 1. After you’ve loaded in your iso into your vm-ware environment and configured your virtualization to have the correct amount of memory and storage, verify the boot mode by entering this command: `ls /sys/firmware/efi/efivars`
 - If the directory exists then the system is booted in UEFI mode
 
@@ -43,6 +45,7 @@
 - Press `1` to specify that we want to use the first type, EFI System
 - Press `t` to change partition 2’s type
 - Press `19` to specify that we want to use the 19th type, Linux swap
+   - I accidentally typed 18, instead of 19, and I had to recover by pulling from my last snapshot. 
 - Make sure everything is correct before this next step
 - Type `w` to write the partition table
 5. Make file system
@@ -142,7 +145,8 @@
 - Enter this command to copy the user-specific bashrc file, `cp .bashrc .bashrc.backup`
   - Or edit the one in the etc location: `sudo cp /etc/bash.bashrc /etc/bash.bashrc.backup`
 - I chose to edit the main bashrc file by doing `sudo nano /etc/bash.bashrc`
-- I then changed the PS1 variable to become: `PS1="${GREEN}my prompt${RESET}>"`
+- I then changed the PS1 variable to become: `PS1="${GREEN}KeepMovingForward${RESET}>"`
 - But added in the following lines just above the PS1 variable
 - `GREEN="\[$(tput setaf 2)\]"`
 - `RESET="\[$(tput sgr0)\]"`
+- Finally, after saving the changes, I typed out this command `source /etc/bash.bashrc`
