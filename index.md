@@ -126,6 +126,8 @@
 - `makepkg -s`
 - Find the proper compressed package that ends in .tar.gz through ‘ls’
 - `sudo pacman -U google-chrome-95.0.4638.54-1-x86_64.pkg.tar.zst`
+- I was wondering why the process for installing chrome took so many steps, but I found a YouTube video that explained that there's actually a shortcut command.
+- Instead of using sudo packman -U, immediately after I used `sudo pacman -S base-devel`, I could use `makepkg -sic`
 
 16. Installing zsh
 - `sudo pacman -S zsh zsh-completions`
